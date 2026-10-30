@@ -36,11 +36,60 @@ Library: `FermatNapoleon`
 * **Ptolemy.** Mathlib already has the inequality (`EuclideanGeometry.mul_dist_le_mul_dist_add_mul_dist`) and the cospherical equality (`EuclideanGeometry.mul_dist_add_mul_dist_eq_mul_dist_of_cospherical`). The second gives the easy direction. For the converse, invert about `A` (`x ↦ x/|x|²`). Equality turns into `B'C' + C'D' = B'D'`, so `C' = (1−μ)B' + μD'` with `0 < μ < 1` (Mathlib's `dist_add_dist_eq_iff`). If `B'`, `D'` are parallel the four points are collinear, and the claim reduces to four reals (`ptolemy_real`, by cases on the order). Otherwise an explicit centre `m` with `⟪m, x'⟫ = 1/2` gives the circle, and `X = A + C'/κ` is the crossing point of the diagonals.
 * **Fermat–Napoleon.** The bridge `apex_frame` writes `A'−A`, `B'−B`, `C'−C` in the frame `p = B−A`, `q = C−A`. It uses one scalar `α > 0` with `4α²(|p|²|q|²−⟪p,q⟫²) = 3`, obtained from the rotation formula `R_{∓π/3} v = ½v ∓ (√3/2)Jv` and Cramer's rule in the plane. Each metric fact is then a polynomial identity modulo that relation, closed by `linear_combination` with explicit cofactors (checked first with sympy/mpmath). The common point is `F = A + (y_A/S)(A'−A)`, with `y_A = 1+2α⟪p,q⟫`, `y_B = 1+2α(|p|²−⟪p,q⟫)`, `y_C = 1+2α(|q|²−⟪p,q⟫)`, `S = y_A+y_B+y_C > 0`. The angle hypotheses `< 2π/3` are exactly what make `y_A`, `y_B`, `y_C > 0`. Some helper lemmas are adapted (with attribution) from the Erdős–Mordell/Fermat–Torricelli development.
 
+## Layer 13 (blind restatement)
+
+An independent writer, who saw only the plain-English statements of the paper and not this library,
+wrote the theorem statements in Lean on their own (`PaperHBlind.lean`, sha256 beginning
+`e257c271479a928f`). `FermatNapoleon/L13Blind.lean` (namespace `FermatNapoleon.Blind`) copies the
+writer's definitions and statements 28 and 37–50 verbatim. For each one it proves both directions
+against the library theorem: `rb_K` (library → blind) and `br_K` (blind → library).
+
+* All 15 blind statements are proved equivalent to the library in both directions (13 of them
+  jointly). The writer split five library theorems into parts: outward apexes (37–39), equal
+  distances (40–41), meeting at the Fermat point (43–44), the 60° angles (45–47) and Napoleon's
+  theorem (48–50). Each part follows from the library theorem, and together the parts give it back
+  (`br_37_38_39`, `br_40_41`, `br_43_44`, `br_45_46_47`, `br_48_49_50`). Ptolemy's equality case (28)
+  and the concurrence (42) are equivalent individually.
+* The agreement lemmas show that the writer's orientation sign, outward apexes, Napoleon centres and
+  centroid are the library's. `agree_orders` shows that the writer's eight order conditions for four
+  collinear points are the library's condition.
+* No difference in meaning was found.
+
+## Layer 14 (Mathlib-only restatements and witnesses)
+
+`FermatNapoleon/L14.lean` restates every main theorem using only Mathlib notions. The outward apexes
+are written out explicitly by the rotation formula, and the Napoleon centres as centroids. All 9
+restatements (`l14_*`) are proved from the library, together with two bridges that connect the
+library's apex definition to the explicit formula. Four witness theorems (`l14w_*`) show that the
+hypotheses can be satisfied: the triangle 0, 4, 3i in the complex plane with its apexes, Fermat point
+and a non-degenerate Napoleon triangle; a rectangle (cyclic case of Ptolemy); and collinear points.
+
+## Layer 15 (classical statements)
+
+An independent writer also stated the classical theorems in textbook form, using only Mathlib and a few
+elementary definitions (`PaperHClassical.lean`, sha256 beginning `0ac73f94ec9efdb8`).
+`FermatNapoleon/L15Classical.lean` (namespace `FermatNapoleon.Classical`) copies these definitions
+verbatim and restates each assigned classical statement with its verbatim type as `cov_<name>`.
+
+* All 6 classical statements are proved from the library: Ptolemy's equality case with its converse
+  (P2), the Fermat–Napoleon statements (F2a equal lengths, F2b concurrence, F2c meeting at the Fermat
+  point, F2d 60° angles) and Napoleon's theorem (F3).
+* NEW PROOFS. These translate between the classical definitions and the library's; they are not part
+  of the earlier layers:
+  * `real_order_iff`, `col_iff`: the classical order condition for four collinear points is the library's.
+  * `coplanar_of_cross`, `sbtw_of_concyclic`: crossing diagonals of four concyclic points (weak versus
+    strict crossing).
+  * `inner_of_angle'`, `vne_of_angle`, `vne_of_angle'`, `unit_sum`, `fermat_unique_vec`,
+    `fermat_unique`: the point seeing three points at mutual 120° is unique (used for F2c, where the
+    classical statement starts from the Fermat point instead of the intersection of the lines).
+  * `apex_eq`, `classical_apexes`: in the plane, an apex defined classically (an equilateral triangle
+    on the far side of the edge) is the library's apex for the orientation given by any basis.
+
 ## Building and checking
 ```
 lake build                # build the library
 bash gate.sh              # no sorry/axiom/forbidden commands; build; #print axioms for every
-                          # definition, bridge and theorem -> PASS (47 declarations, standard axioms only)
+                          # definition, bridge and theorem -> PASS (171 declarations, standard axioms only)
 bash tests/tamper.sh      # 9 planted defects, each must be rejected -> ALL TAMPERING TESTS REJECTED
 ```
 Do not run `lake update`. The Mathlib build is expected in `.lake/packages`.
